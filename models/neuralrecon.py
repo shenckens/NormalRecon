@@ -81,8 +81,8 @@ class NeuralRecon(nn.Module):
         features = [self.backbone2d(self.normalizer(img)) for img in imgs]
 
         # TODO: make it for for imgs.shape (bs, views, ch, h, w)
-        norm_priors = [self.norm_img_prior(img) for img in imgs]
-        features = np.stack([features, norm_priors], dim=2)
+        norm_priors = np.array([self.norm_img_prior(img) for img in imgs])
+        features = np.stack([np.asarray(features), norm_priors], dim=2)
 
         # coarse-to-fine decoder: SparseConv and GRU Fusion.
         # in: image feature; out: sparse coords and tsdf
