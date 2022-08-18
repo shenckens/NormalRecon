@@ -55,8 +55,25 @@ def args():
     return args
 
 
+def nnet_args():
+    parser = argparse.ArgumentParser(description='Arguments for the normal prior model.')
+
+    parser.add_argument('--architecture', default='BN', type=str, help='{BN, GN}')
+    parser.add_argument("--pretrained", default='scannet', type=str, help="{nyu, scannet}")
+    parser.add_argument('--sampling_ratio', type=float, default=0.4)
+    parser.add_argument('--importance_ratio', type=float, default=0.7)
+    parser.add_argument('--input_height', default=480, type=int)
+    parser.add_argument('--input_width', default=640, type=int)
+    # parser.add_argument('--imgs_dir', default='./examples', type=str)
+
+    args = parser.parse_args()
+
+    return args
+
+
 args = args()
 update_config(cfg, args)
+nnet_args = nnet_args()
 
 cfg.defrost()
 num_gpus = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
@@ -143,7 +160,7 @@ else:
                                drop_last=False)
 
 # model, optimizer
-model = NeuralRecon(cfg)
+model = NeuralRecon(cfg, nnet_args)
 if cfg.DISTRIBUTED:
     model.cuda()
     model = DistributedDataParallel(
