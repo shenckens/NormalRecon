@@ -66,7 +66,7 @@ def nnet_args():
     parser.add_argument('--input_width', default=640, type=int)
     # parser.add_argument('--imgs_dir', default='./examples', type=str)
 
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
 
     return args
 
