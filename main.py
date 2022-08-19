@@ -131,8 +131,9 @@ transforms = transforms.Compose(transform)
 
 # dataset, dataloader
 MVSDataset = find_dataset_def(cfg.DATASET)
-train_dataset = MVSDataset(cfg.TRAIN.PATH, "train", transforms, cfg.TRAIN.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1)
-test_dataset = MVSDataset(cfg.TEST.PATH, "test", transforms, cfg.TEST.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1)
+train_dataset = MVSDataset(cfg.TRAIN.PATH, "train", transforms, cfg.TRAIN.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1, nnet_args)
+# val_dataset = MVSDataseet(cfg.TRAIN.PATH, "val", transforms, cgf.TRAIN.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1, nnet_args)
+test_dataset = MVSDataset(cfg.TEST.PATH, "test", transforms, cfg.TEST.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1, nnet_args)
 
 if cfg.DISTRIBUTED:
     train_sampler = DistributedSampler(train_dataset, shuffle=False)
@@ -156,11 +157,13 @@ if cfg.DISTRIBUTED:
 else:
     TrainImgLoader = DataLoader(train_dataset, cfg.BATCH_SIZE, shuffle=False, num_workers=cfg.TRAIN.N_WORKERS,
                                 drop_last=True)
+    # ValImgLoader = DataLoader(val_dataset, cfg.BATCH_SIZE, shuffle=False, num_workers=cfg.TRAIN.N_WORKERS,
+    #                           drop_last=False)
     TestImgLoader = DataLoader(test_dataset, cfg.BATCH_SIZE, shuffle=False, num_workers=cfg.TEST.N_WORKERS,
                                drop_last=False)
 
 # model, optimizer
-model = NeuralRecon(cfg, nnet_args)
+model = NeuralRecon(cfg)
 if cfg.DISTRIBUTED:
     model.cuda()
     model = DistributedDataParallel(

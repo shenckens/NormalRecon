@@ -2,18 +2,29 @@ import os
 import numpy as np
 import pickle
 import cv2
+import torch
 from PIL import Image
+from models.NNet.NNet import NNet
 from torch.utils.data import Dataset
-
+from torchvision import transforms
 
 class ScanNetDataset(Dataset):
-    def __init__(self, datapath, mode, transforms, nviews, n_scales):
+    def __init__(self, datapath, mode, transform, nviews, n_scales, nnet_args=False):
         super(ScanNetDataset, self).__init__()
         self.datapath = datapath
         self.mode = mode
         self.n_views = nviews
-        self.transforms = transforms
+        self.transforms = transform
+        self.normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         self.tsdf_file = 'all_tsdf_{}'.format(self.n_views)
+        self.device = torch.device('cuda:0')
+        if nnet_args:
+            self.nnet = NNet(nnet_args)
+            loadckpt = os.path.join(self.datapath, 'scannet.pt')
+            state_dict = torch.load(loadckpt)
+            self.nnet.load_state_dict(state_dict['model'])
+            self.nnet.to(self.device)
+            self.nnet.eval()
 
         assert self.mode in ["train", "val", "test"]
         self.metas = self.build_list()
@@ -53,6 +64,19 @@ class ScanNetDataset(Dataset):
         depth_im[depth_im > 3.0] = 0
         return depth_im
 
+    def estm_norm_prior(self, filepath):
+        img = self.read_img(filepath)
+        img = np.array(img).astype(np.float32) / 255.0
+        img = torch.from_numpy(img).permute(2, 0, 1)
+        img = self.normalize(img)
+        img.to(self.device)
+        norm_out_list, _, _ = self.nnet(img)
+        # includes norm and kappa (B, C, H, W) (1, 6, 480, 640)
+        # remove Batchsize dimension
+        norm_out = norm_out_list[-1].squeeze().detach()
+        img.detach()
+        return norm_out
+
     def read_scene_volumes(self, data_path, scene):
         if scene not in self.tsdf_cashe.keys():
             if len(self.tsdf_cashe) > self.max_cashe:
@@ -71,6 +95,7 @@ class ScanNetDataset(Dataset):
 
         imgs = []
         depth = []
+        normals = []
         extrinsics_list = []
         intrinsics_list = []
 
@@ -80,11 +105,17 @@ class ScanNetDataset(Dataset):
             # load images
             imgs.append(
                 self.read_img(
-                    os.path.join(self.datapath, self.source_path, meta['scene'], 'color', '{}.jpg'.format(vid))))
+                    os.path.join(self.datapath, self.source_path, meta['scene'], 'color', '{}.jpg'.format(vid)))
+            )
 
             depth.append(
                 self.read_depth(
                     os.path.join(self.datapath, self.source_path, meta['scene'], 'depth', '{}.png'.format(vid)))
+            )
+
+            normals.append(
+                self.estm_norm_prior(
+                    os.path.join(self.datapath, self.source_path, meta['scene'], 'color', '{}.jpg'.format(vid)))
             )
 
             # load intrinsics and extrinsics
@@ -100,6 +131,7 @@ class ScanNetDataset(Dataset):
         items = {
             'imgs': imgs,
             'depth': depth,
+            'normals': normals,
             'intrinsics': intrinsics,
             'extrinsics': extrinsics,
             'tsdf_list_full': tsdf_list,

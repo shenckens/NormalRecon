@@ -5,7 +5,6 @@ import numpy as np
 from .backbone import MnasMulti
 from .neucon_network import NeuConNet
 from .gru_fusion import GRUFusion
-from .NNet.NNet import NNet
 from utils import tocuda
 
 
@@ -14,7 +13,7 @@ class NeuralRecon(nn.Module):
     NeuralRecon main class.
     '''
 
-    def __init__(self, cfg, nnet_args):
+    def __init__(self, cfg):
         super(NeuralRecon, self).__init__()
         self.cfg = cfg.MODEL
         alpha = float(self.cfg.BACKBONE2D.ARC.split('-')[-1])
@@ -25,7 +24,6 @@ class NeuralRecon(nn.Module):
 
         # networks
         self.backbone2d = MnasMulti(alpha)
-        self.norm_img_prior = NNet(nnet_args)
         self.neucon_net = NeuConNet(cfg.MODEL)
         # for fusing to global volume
         self.fuse_to_global = GRUFusion(cfg.MODEL, direct_substitute=True)
@@ -75,14 +73,17 @@ class NeuralRecon(nn.Module):
         inputs = tocuda(inputs)
         outputs = {}
         imgs = torch.unbind(inputs['imgs'], 1)
+        normals = torch.unbind(inputs['normals'], 1)
+
+        comb_imgs = torch.stack([imgs, normals], dim=1)
 
         # image feature extraction
         # in: images; out: feature maps
-        features = [self.backbone2d(self.normalizer(img)) for img in imgs]
+        features = [self.backbone2d(self.normalizer(img)) for img in comb_imgs]
 
         # TODO: make it for for imgs.shape (bs, views, ch, h, w)
-        norm_priors = np.array([self.norm_img_prior(img) for img in imgs])
-        features = np.stack([np.asarray(features), norm_priors], dim=2)
+        # norm_priors = np.array([self.norm_img_prior(img) for img in imgs])
+        # features = np.stack([np.asarray(features), norm_priors], dim=2)
 
         # coarse-to-fine decoder: SparseConv and GRU Fusion.
         # in: image feature; out: sparse coords and tsdf
