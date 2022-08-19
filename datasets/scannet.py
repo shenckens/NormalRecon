@@ -4,7 +4,7 @@ import pickle
 import cv2
 import torch
 from PIL import Image
-from models.NNet.NNet import NNet
+from ..models.NNet.NNet import NNet
 from torch.utils.data import Dataset
 from torchvision import transforms
 
