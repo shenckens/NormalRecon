@@ -4,9 +4,9 @@ import pickle
 import cv2
 import torch
 from PIL import Image
-from ..models.NNet.NNet import NNet
 from torch.utils.data import Dataset
 from torchvision import transforms
+from models.NNet.NNet import NNet
 
 class ScanNetDataset(Dataset):
     def __init__(self, datapath, mode, transform, nviews, n_scales, nnet_args=False):
