@@ -6,7 +6,7 @@ import torch
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
-from models.NNet.NNet import NNet
+from models.NNet.NNET import NNET
 
 class ScanNetDataset(Dataset):
     def __init__(self, datapath, mode, transform, nviews, n_scales, nnet_args=False):
@@ -19,7 +19,7 @@ class ScanNetDataset(Dataset):
         self.tsdf_file = 'all_tsdf_{}'.format(self.n_views)
         self.device = torch.device('cuda:0')
         if nnet_args:
-            self.nnet = NNet(nnet_args)
+            self.nnet = NNET(nnet_args)
             loadckpt = os.path.join(self.datapath, 'scannet.pt')
             state_dict = torch.load(loadckpt)
             self.nnet.load_state_dict(state_dict['model'])
