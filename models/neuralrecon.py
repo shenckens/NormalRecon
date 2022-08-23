@@ -25,7 +25,6 @@ class NeuralRecon(nn.Module):
         self.pixel_mean = torch.Tensor(cfg.MODEL.PIXEL_MEAN).view(-1, 1, 1)
         self.pixel_std = torch.Tensor(cfg.MODEL.PIXEL_STD).view(-1, 1, 1)
         self.n_scales = len(self.cfg.THRESHOLDS) - 1
-        self.device = torch.device('cuda:0')
 
         # networks
         self.backbone2d = MnasMulti(alpha)
@@ -34,7 +33,7 @@ class NeuralRecon(nn.Module):
             loadckpt = os.path.join(self.cfg.TRAIN.PATH, 'scannet.pt')
             state_dict = torch.load(loadckpt)
             self.nnet.load_state_dict(state_dict['model'])
-            self.nnet.to(self.device)
+            self.nnet.cuda()
             self.nnet.eval()
         self.neucon_net = NeuConNet(cfg.MODEL)
         # for fusing to global volume
