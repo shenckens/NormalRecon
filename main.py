@@ -49,6 +49,10 @@ def args():
                         default=0,
                         type=int,
                         help='node rank for distributed training')
+    parser.add_argument('--normal_prior',
+                        default=False,
+                        type=bool,
+                        help='Switch whether or not to include normal priors.')
 
     # parse arguments and check
     args = parser.parse_args()
@@ -74,7 +78,8 @@ def nnet_args():
 
 args = args()
 update_config(cfg, args)
-nnet_args = nnet_args()
+
+nnet_args = nnet_args() if args.normal_prior else False
 
 cfg.defrost()
 num_gpus = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
@@ -169,7 +174,7 @@ else:
                                drop_last=False)
 
 # model, optimizer
-model = NeuralRecon(cfg)
+model = NeuralRecon(cfg, nnet_args=nnet_args)
 if cfg.DISTRIBUTED:
     model.cuda()
     model = DistributedDataParallel(

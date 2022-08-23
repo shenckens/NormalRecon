@@ -1,11 +1,14 @@
 import torch
 import torch.nn as nn
 import numpy as np
+import os
 
 from .backbone import MnasMulti
 from .neucon_network import NeuConNet
 from .gru_fusion import GRUFusion
 from utils import tocuda
+from models.NNet.NNET import NNET
+
 
 
 class NeuralRecon(nn.Module):
@@ -13,17 +16,26 @@ class NeuralRecon(nn.Module):
     NeuralRecon main class.
     '''
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, nnet_args=False):
         super(NeuralRecon, self).__init__()
         self.cfg = cfg.MODEL
+        self.nnet_args = nnet_args
         alpha = float(self.cfg.BACKBONE2D.ARC.split('-')[-1])
         # other hparams
         self.pixel_mean = torch.Tensor(cfg.MODEL.PIXEL_MEAN).view(-1, 1, 1)
         self.pixel_std = torch.Tensor(cfg.MODEL.PIXEL_STD).view(-1, 1, 1)
         self.n_scales = len(self.cfg.THRESHOLDS) - 1
+        self.device = torch.device('cuda:0')
 
         # networks
         self.backbone2d = MnasMulti(alpha)
+        if self.nnet_args:
+            self.nnet = NNET(nnet_args)
+            loadckpt = os.path.join(self.cfg.TRAIN.PATH, 'scannet.pt')
+            state_dict = torch.load(loadckpt)
+            self.nnet.load_state_dict(state_dict['model'])
+            self.nnet.to(self.device)
+            self.nnet.eval()
         self.neucon_net = NeuConNet(cfg.MODEL)
         # for fusing to global volume
         self.fuse_to_global = GRUFusion(cfg.MODEL, direct_substitute=True)
@@ -31,6 +43,18 @@ class NeuralRecon(nn.Module):
     def normalizer(self, x):
         """ Normalizes the RGB images to the input range"""
         return (x - self.pixel_mean.type_as(x)) / self.pixel_std.type_as(x)
+
+    def estm_norm_prior(self, img):
+        img = np.array(img).astype(np.float32) / 255.0
+        img = torch.from_numpy(img).permute(2, 0, 1)
+        img = self.normalize(img)
+        img.to(self.device)
+        norm_out_list, _, _ = self.nnet(img)
+        # includes norm and kappa (B, C, H, W) (1, 6, 480, 640)
+        # remove Batchsize dimension
+        norm_out = norm_out_list[-1].squeeze().detach()
+        img.detach()
+        return norm_out
 
     def forward(self, inputs, save_mesh=False):
         '''
@@ -73,13 +97,14 @@ class NeuralRecon(nn.Module):
         inputs = tocuda(inputs)
         outputs = {}
         imgs = torch.unbind(inputs['imgs'], 1)
-        normals = torch.unbind(inputs['normals'], 1)
-
-        comb_imgs = torch.stack([imgs, normals], dim=1)
+        # Add normal priors to images.
+        if self.nnet_args:
+            normals = self.nnet(imgs)
+            imgs = torch.stack([imgs, normals], dim=1)
 
         # image feature extraction
         # in: images; out: feature maps
-        features = [self.backbone2d(self.normalizer(img)) for img in comb_imgs]
+        features = [self.backbone2d(self.normalizer(img)) for img in imgs]
 
         # TODO: make it for for imgs.shape (bs, views, ch, h, w)
         # norm_priors = np.array([self.norm_img_prior(img) for img in imgs])
