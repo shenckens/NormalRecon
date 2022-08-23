@@ -136,14 +136,14 @@ transform += [transforms.ResizeImage((640, 480)),
 transforms = transforms.Compose(transform)
 
 # dataset, dataloader
-# MVSDataset = find_dataset_def(cfg.DATASET)
-# train_dataset = MVSDataset(cfg.TRAIN.PATH, "train", transforms, cfg.TRAIN.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1, nnet_args)
-# # val_dataset = MVSDataseet(cfg.TRAIN.PATH, "val", transforms, cgf.TRAIN.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1, nnet_args)
-# test_dataset = MVSDataset(cfg.TEST.PATH, "test", transforms, cfg.TEST.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1, nnet_args)
+MVSDataset = find_dataset_def(cfg.DATASET)
+train_dataset = MVSDataset(cfg.TRAIN.PATH, "train", transforms, cfg.TRAIN.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1)
+# val_dataset = MVSDataseet(cfg.TRAIN.PATH, "val", transforms, cgf.TRAIN.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1)
+test_dataset = MVSDataset(cfg.TEST.PATH, "test", transforms, cfg.TEST.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1)
 
-train_dataset = ScanNetDataset(cfg.TRAIN.PATH, "train", transforms, cfg.TRAIN.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1, nnet_args)
-# val_dataset = MVSDataseet(cfg.TRAIN.PATH, "val", transforms, cgf.TRAIN.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1, nnet_args)
-test_dataset = ScanNetDataset(cfg.TEST.PATH, "test", transforms, cfg.TEST.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1, nnet_args)
+# train_dataset = ScanNetDataset(cfg.TRAIN.PATH, "train", transforms, cfg.TRAIN.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1, nnet_args)
+# # val_dataset = MVSDataseet(cfg.TRAIN.PATH, "val", transforms, cgf.TRAIN.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1, nnet_args)
+# test_dataset = ScanNetDataset(cfg.TEST.PATH, "test", transforms, cfg.TEST.N_VIEWS, len(cfg.MODEL.THRESHOLDS) - 1, nnet_args)
 
 
 if cfg.DISTRIBUTED:
