@@ -95,19 +95,31 @@ class NeuralRecon(nn.Module):
         '''
         inputs = tocuda(inputs)
         outputs = {}
-        imgs = torch.unbind(inputs['imgs'], 1)
+        imgs = torch.unbind(inputs['imgs'], 1) # makes 9 elements of B, C, H, W
+
+        # Normalize imgs beforehand.
+        print(imgs.shape)
+        imgs = self.normalizer(imgs)
+        print('normalized imgs', imgs.shape)
+
         # Add normal priors to images.
         if self.nnet_args:
-            normals = self.nnet(imgs)
+            normal_list, _, _ = self.nnet(imgs)
+            normals = normal_list[-1]
+            print(normals.shape)
+            print(normals)
             imgs = torch.stack([imgs, normals], dim=1)
+            print('stacked features shape', imgs.shape)
 
         # image feature extraction
         # in: images; out: feature maps
-        features = [self.backbone2d(self.normalizer(img)) for img in imgs]
+        # features = [self.backbone2d(self.normalizer(img)) for img in imgs] # 9 imgs
 
         # TODO: make it for for imgs.shape (bs, views, ch, h, w)
-        # norm_priors = np.array([self.norm_img_prior(img) for img in imgs])
-        # features = np.stack([np.asarray(features), norm_priors], dim=2)
+        features = [self.backbone2d(img) for img in imgs]
+
+
+
 
         # coarse-to-fine decoder: SparseConv and GRU Fusion.
         # in: image feature; out: sparse coords and tsdf
