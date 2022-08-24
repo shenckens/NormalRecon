@@ -30,7 +30,7 @@ class NeuralRecon(nn.Module):
         self.backbone2d = MnasMulti(alpha)
         if self.nnet_args:
             self.nnet = NNET(nnet_args)
-            loadckpt = os.path.join(self.cfg.TRAIN.PATH, 'scannet.pt')
+            loadckpt = os.path.join(cfg.TRAIN.PATH, 'scannet.pt')
             state_dict = torch.load(loadckpt)
             self.nnet.load_state_dict(state_dict['model'])
             self.nnet.cuda()
