@@ -106,6 +106,8 @@ class NeuralRecon(nn.Module):
             for img in imgs:
                 normal_list, _, _ = self.nnet(img)
                 normal = normal_list[-1]
+                print(normal.shape)
+                normal_list.detach()
                 # print(normals.shape)
                 print(normal)
                 normals.append(normal)
