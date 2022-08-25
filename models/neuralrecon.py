@@ -10,7 +10,6 @@ from utils import tocuda
 from models.NNet.NNET import NNET
 
 
-
 class NeuralRecon(nn.Module):
     '''
     NeuralRecon main class.
@@ -96,14 +95,15 @@ class NeuralRecon(nn.Module):
         '''
         inputs = tocuda(inputs)
         outputs = {}
-        imgs = torch.unbind(inputs['imgs'], 1) # makes 9 elements of B, C, H, W
+        # makes 9 elements of B, C, H, W
+        imgs = torch.unbind(inputs['imgs'], 1)
 
         # Normalize imgs beforehand.
         imgs = [self.normalizer(img) for img in imgs]
 
         # Add normal priors to images.
         if self.nnet_args:
-            normals = []
+            priors = []
             with torch.no_grad():
                 for img in imgs:
                     print('imgshape', img.shape)
@@ -114,11 +114,9 @@ class NeuralRecon(nn.Module):
                         self.one_time = False
                     print('normalshape', normal.shape)
                     # print(normals.shape)
-                    normals.append(normal)
-
-            normals = torch.tensor(normals)
-            imgs = torch.tensor(imgs)
-            imgs = torch.stack([imgs, normals], dim=1)
+                    prior = torch.stack([img, normal], dim=1)
+                    priors.append(prior)
+            imgs = priors
 
         # image feature extraction
         # in: images; out: feature maps
@@ -127,16 +125,14 @@ class NeuralRecon(nn.Module):
         # TODO: make it for for imgs.shape (bs, views, ch, h, w)
         features = [self.backbone2d(img) for img in imgs]
 
-
-
-
         # coarse-to-fine decoder: SparseConv and GRU Fusion.
         # in: image feature; out: sparse coords and tsdf
         outputs, loss_dict = self.neucon_net(features, inputs, outputs)
 
         # fuse to global volume.
         if not self.training and 'coords' in outputs.keys():
-            outputs = self.fuse_to_global(outputs['coords'], outputs['tsdf'], inputs, self.n_scales, outputs, save_mesh)
+            outputs = self.fuse_to_global(
+                outputs['coords'], outputs['tsdf'], inputs, self.n_scales, outputs, save_mesh)
 
         # gather loss.
         print_loss = 'Loss: '
