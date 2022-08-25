@@ -109,10 +109,13 @@ class NeuralRecon(nn.Module):
                 for img in imgs:
                     print('imgshape', img.shape)
                     normal_list, _, _ = self.nnet(img)
-                    normal = normal_list[-1]
+                    normal_4c = normal_list[-1]
+                    normal = normal_4c[:, :3, :, :]
+                    kappa = normal_4c[:, 3:, :, :]
                     if self.one_time:
                         print("This is printed only once!")
-                        plt.imsave('./normal_img.png', normal.cpu())
+                        plt.imsave('./normal_img.png', normal[0].permute(1, 2, 0).cpu())
+                        plt.imsave('./kappa_img.png', kappa[0].permute(1, 2, 0).cpu())
                         self.one_time = False
                     print('normalshape', normal.shape)
                     # print(normals.shape)
