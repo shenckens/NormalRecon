@@ -103,13 +103,14 @@ class NeuralRecon(nn.Module):
         # Add normal priors to images.
         if self.nnet_args:
             normals = []
-            for img in imgs:
-                print('imgshape', img.shape)
-                normal_list, _, _ = self.nnet(img)
-                normal = normal_list[-1]
-                print('normalshape', normal.shape)
-                # print(normals.shape)
-                normals.append(normal)
+            with torch.no_grad():
+                for img in imgs:
+                    print('imgshape', img.shape)
+                    normal_list, _, _ = self.nnet(img)
+                    normal = normal_list[-1]
+                    print('normalshape', normal.shape)
+                    # print(normals.shape)
+                    normals.append(normal)
 
             normals = np.asarray(normals)
             imgs = np.asarray(imgs)
