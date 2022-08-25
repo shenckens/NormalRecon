@@ -38,6 +38,7 @@ class NeuralRecon(nn.Module):
         self.neucon_net = NeuConNet(cfg.MODEL)
         # for fusing to global volume
         self.fuse_to_global = GRUFusion(cfg.MODEL, direct_substitute=True)
+        self.one_time = True
 
     def normalizer(self, x):
         """ Normalizes the RGB images to the input range"""
@@ -108,13 +109,16 @@ class NeuralRecon(nn.Module):
                     print('imgshape', img.shape)
                     normal_list, _, _ = self.nnet(img)
                     normal = normal_list[-1]
+                    if self.one_time:
+                        print("This is printed only once!")
+                        self.one_time = False
                     print('normalshape', normal.shape)
                     # print(normals.shape)
                     normals.append(normal)
 
-            normals = np.asarray(normals)
-            imgs = np.asarray(imgs)
-            imgs = np.stack([imgs, normals], dim=1).to_list()
+            # normals = torch.tensor(normals)
+            # imgs = torch.tensor(imgs)
+            imgs = torch.stack([imgs, normals], dim=1)
 
         # image feature extraction
         # in: images; out: feature maps
