@@ -108,8 +108,8 @@ class NeuralRecon(nn.Module):
             normals = normal_list[-1]
             # print(normals.shape)
             print(normals)
-            imgs = torch.stack([imgs, normals], dim=1)
-            print('stacked features shape', imgs.shape)
+            imgs = np.stack([imgs, normals], dim=1).to_list()
+            # print('stacked features shape', imgs.shape)
 
         # image feature extraction
         # in: images; out: feature maps
