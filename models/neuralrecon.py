@@ -33,7 +33,7 @@ class NeuralRecon(nn.Module):
             loadckpt = os.path.join(cfg.TRAIN.PATH, 'scannet.pt')
             state_dict = torch.load(loadckpt)
             self.nnet.load_state_dict(state_dict['model'])
-            self.nnet.cuda()
+            # self.nnet.cuda()
             self.nnet.eval()
         self.neucon_net = NeuConNet(cfg.MODEL)
         # for fusing to global volume
@@ -104,12 +104,11 @@ class NeuralRecon(nn.Module):
         if self.nnet_args:
             normals = []
             for img in imgs:
+                print('imgshape', img.shape)
                 normal_list, _, _ = self.nnet(img)
                 normal = normal_list[-1]
-                print(normal.shape)
-                normal_list.detach()
+                print('normalshape', normal.shape)
                 # print(normals.shape)
-                print(normal)
                 normals.append(normal)
 
             normals = np.asarray(normals)
