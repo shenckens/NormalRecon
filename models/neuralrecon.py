@@ -112,14 +112,13 @@ class NeuralRecon(nn.Module):
                     normal = normal_list[-1]
                     if self.one_time:
                         print("This is printed only once!")
-                        plt.imsave('$HOME/normal_img.png', normal.cpu())
+                        plt.imsave('./normal_img.png', normal.cpu())
                         self.one_time = False
                     print('normalshape', normal.shape)
                     # print(normals.shape)
                     prior = torch.cat([img, normal], dim=1)
                     priors.append(prior)
             imgs = priors
-
 
         # image feature extraction
         # in: images; out: feature maps
