@@ -114,7 +114,7 @@ class NeuralRecon(nn.Module):
                         self.one_time = False
                     print('normalshape', normal.shape)
                     # print(normals.shape)
-                    prior = torch.stack([img, normal], dim=1)
+                    prior = torch.cat([img, normal], dim=1)
                     priors.append(prior)
             imgs = priors
 
