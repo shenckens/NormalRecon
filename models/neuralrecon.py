@@ -98,18 +98,21 @@ class NeuralRecon(nn.Module):
         imgs = torch.unbind(inputs['imgs'], 1) # makes 9 elements of B, C, H, W
 
         # Normalize imgs beforehand.
-        # print(imgs.shape)
         imgs = [self.normalizer(img) for img in imgs]
-        # print('normalized imgs', imgs.shape)
 
         # Add normal priors to images.
         if self.nnet_args:
-            normal_list, _, _ = self.nnet(imgs)
-            normals = normal_list[-1]
-            # print(normals.shape)
-            print(normals)
+            normals = []
+            for img in imgs:
+                normal_list, _, _ = self.nnet(img)
+                normal = normal_list[-1]
+                # print(normals.shape)
+                print(normal)
+                normals.append(normal)
+
+            normals = np.asarray(normals)
+            imgs = np.asarray(imgs)
             imgs = np.stack([imgs, normals], dim=1).to_list()
-            # print('stacked features shape', imgs.shape)
 
         # image feature extraction
         # in: images; out: feature maps
