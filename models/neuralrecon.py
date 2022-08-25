@@ -118,6 +118,7 @@ class NeuralRecon(nn.Module):
                     priors.append(prior)
             imgs = priors
 
+
         # image feature extraction
         # in: images; out: feature maps
         # features = [self.backbone2d(self.normalizer(img)) for img in imgs] # 9 imgs
