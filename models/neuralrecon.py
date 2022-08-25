@@ -116,8 +116,8 @@ class NeuralRecon(nn.Module):
                     # print(normals.shape)
                     normals.append(normal)
 
-            # normals = torch.tensor(normals)
-            # imgs = torch.tensor(imgs)
+            normals = torch.tensor(normals)
+            imgs = torch.tensor(imgs)
             imgs = torch.stack([imgs, normals], dim=1)
 
         # image feature extraction
