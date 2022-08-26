@@ -116,8 +116,8 @@ class NeuralRecon(nn.Module):
                         print("This is printed only once!")
                         # test = normal[0].permute(1, 2, 0).cpu()
                         # print(test.shape)
-                        plt.imsave('./normal_img.png', normal[0].permute(1, 2, 0).cpu().to_numpy())
-                        plt.imsave('./kappa_img.png', kappa[0].permute(1, 2, 0).cpu().to_numpy())
+                        plt.imsave('./normal_img.png', normal[0].permute(1, 2, 0).cpu().numpy())
+                        plt.imsave('./kappa_img.png', kappa[0].permute(1, 2, 0).cpu().numpy())
                         self.one_time = False
                     print('normalshape', normal.shape)
                     # print(normals.shape)
