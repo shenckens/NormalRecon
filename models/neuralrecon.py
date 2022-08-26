@@ -8,7 +8,7 @@ from .neucon_network import NeuConNet
 from .gru_fusion import GRUFusion
 from utils import tocuda
 from models.NNet.NNET import NNET
-import matplotlib.pyplot as plt
+import PIL.Image as Image
 
 
 class NeuralRecon(nn.Module):
@@ -114,10 +114,10 @@ class NeuralRecon(nn.Module):
                     kappa = normal_4c[:, 3:, :, :]
                     if self.one_time:
                         print("This is printed only once!")
-                        # test = normal[0].permute(1, 2, 0).cpu()
-                        # print(test.shape)
-                        plt.imsave('./normal_img.png', normal[0].permute(1, 2, 0).cpu().numpy())
-                        plt.imsave('./kappa_img.png', kappa[0].permute(1, 2, 0).cpu().numpy())
+                        im1 = Image.fromarray(normal[0].permute(1, 2, 0).cpu().numpy())
+                        im2 = Image.fromarray(normal[0].permute(1, 2, 0).cpu().numpy())
+                        im1.save('./normal_img.png')
+                        im2.save('./kappa_img.png')
                         self.one_time = False
                     print('normalshape', normal.shape)
                     # print(normals.shape)
