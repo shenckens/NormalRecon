@@ -114,8 +114,8 @@ class NeuralRecon(nn.Module):
                     kappa = normal_4c[:, 3:, :, :]
                     if self.one_time:
                         print("This is printed only once!")
-                        im1 = Image.fromarray(normal[0].permute(1, 2, 0).cpu().numpy())
-                        im2 = Image.fromarray(normal[0].permute(1, 2, 0).cpu().numpy())
+                        im1 = Image.fromarray(normal[0].cpu())
+                        im2 = Image.fromarray(normal[0].cpu())
                         im1.save('./normal_img.png')
                         im2.save('./kappa_img.png')
                         self.one_time = False
