@@ -136,7 +136,13 @@ class NeuralRecon(nn.Module):
         print(f'features before stats: length {len(features)}, 1st element type {type(features[0])}, shape 1st element of 1st element {features[0][0].shape}')
 
         if self.nnet_args:
-            features = [torch.cat([feat, norm], dim=1) for feat, norm in zip(features, normals_features)]
+            concat_features = []
+            for i in range(len(features)):
+                for e in range(len(features[0])):
+                    elements = []
+                    elements.append(torch.cat([features[i][e], normals_features[i][e]], dim=1))
+                concat_features.append(elements)
+            features = concat_features
             print(f'features before stats: length {len(features)}, 1st element type {type(features[0])}, shape 1st element of 1st element {features[0][0].shape}')
 
 
