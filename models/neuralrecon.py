@@ -104,25 +104,29 @@ class NeuralRecon(nn.Module):
 
         # Add normal priors to images.
         if self.nnet_args:
-            priors = []
+            # priors = []
+            normals = []
             with torch.no_grad():
                 for img in imgs:
                     print('imgshape', img.shape)
                     normal_list, _, _ = self.nnet(img)
-                    normal_4c = normal_list[-1]
-                    normal = normal_4c[:, :3, :, :]
-                    kappa = normal_4c[:, 3:, :, :]
+                    normal = normal_list[-1][:, :3, :, :]
+                    # normal_4c = normal_list[-1]
+                    # normal = normal_4c[:, :3, :, :]
+                    # kappa = normal_4c[:, 3:, :, :]
                     if self.one_time:
                         print("This is printed only once!")
                         save_image(normal[0], './normal_img.png')
-                        save_image(kappa[0], './kappa_img.png')
+                        # save_image(kappa[0], './kappa_img.png')
                         self.one_time = False
                         print('Donediddit')
                     print('normalshape', normal.shape)
-                    # print(normals.shape)
-                    prior = torch.cat([img, normal], dim=1)
-                    priors.append(prior)
-            imgs = priors
+                    normals.append(normal)
+                    # prior = torch.cat([img, normal], dim=1)
+                    # priors.append(prior)
+            # imgs = priors
+            normals_features = [self.backbone2d(normal) for normal in normals]
+            print("Oke oke oke...")
 
         # image feature extraction
         # in: images; out: feature maps
