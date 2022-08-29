@@ -8,7 +8,7 @@ from .neucon_network import NeuConNet
 from .gru_fusion import GRUFusion
 from utils import tocuda
 from models.NNet.NNET import NNET
-import PIL.Image as Image
+from torchvision.utils import save_image
 
 
 class NeuralRecon(nn.Module):
@@ -114,10 +114,8 @@ class NeuralRecon(nn.Module):
                     kappa = normal_4c[:, 3:, :, :]
                     if self.one_time:
                         print("This is printed only once!")
-                        im1 = Image.fromarray(normal[0].cpu().numpy())
-                        im2 = Image.fromarray(normal[0].cpu().numpy())
-                        im1.save('./normal_img.png')
-                        im2.save('./kappa_img.png')
+                        save_image(normal[0], './normal_img.png')
+                        save_image(kappa[0], './kappa_img.png')
                         self.one_time = False
                         print('Donediddit')
                     print('normalshape', normal.shape)
