@@ -137,9 +137,9 @@ class NeuralRecon(nn.Module):
 
         if self.nnet_args:
             concat_features = []
-            for i in range(len(features)):
-                for e in range(len(features[0])):
-                    elements = []
+            for i in range(len(features)): # 9 imgs
+                elements = []
+                for e in range(len(features[0])): # list of 3 tensors per img
                     elements.append(torch.cat([features[i][e], normals_features[i][e]], dim=1))
                 concat_features.append(elements)
             features = concat_features
