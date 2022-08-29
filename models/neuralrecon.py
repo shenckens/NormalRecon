@@ -119,6 +119,7 @@ class NeuralRecon(nn.Module):
                         im1.save('./normal_img.png')
                         im2.save('./kappa_img.png')
                         self.one_time = False
+                        print('Donediddit')
                     print('normalshape', normal.shape)
                     # print(normals.shape)
                     prior = torch.cat([img, normal], dim=1)

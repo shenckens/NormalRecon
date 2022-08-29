@@ -1,13 +1,13 @@
 DATASET: 'scannet'
 BATCH_SIZE: 2
 SAVE_SCENE_MESH: False
-LOGDIR: './checkpoints/normal_prior'
+LOGDIR: './checkpoints/vanilla'
 SAVE_FREQ: 1
 MODE: 'train'
 
 TRAIN:
   PATH: '/project/henckens/data/scannet'
-  EPOCHS: 20
+  EPOCHS: 50
   N_VIEWS: 9
   LR: 1e-3
   N_WORKERS: 8
@@ -29,11 +29,11 @@ MODEL:
     ARC: 'fpn-mnas-1'
 
   FUSION:
-    FUSION_ON: False
+    FUSION_ON: True
     HIDDEN_DIM: 64
 
     AVERAGE: False
-    FULL: False
+    FULL: True
 
   LW: [1.0, 0.8, 0.64]
 
