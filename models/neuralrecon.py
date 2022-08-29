@@ -133,7 +133,7 @@ class NeuralRecon(nn.Module):
 
         # TODO: make it for for imgs.shape (bs, views, ch, h, w)
         features = [self.backbone2d(img) for img in imgs]
-        print(f'features before stats: length {len(features)}, 1st element type {type(features[0])}, shape 1st element of 1st element {features[0][0].shape}')
+        print(f'features before {features[0][0].shape, features[0][1].shape, features[0][2].shape}')
 
         if self.nnet_args:
             concat_features = []
@@ -143,7 +143,7 @@ class NeuralRecon(nn.Module):
                     elements.append(torch.cat([features[i][e], normals_features[i][e]], dim=1))
                 concat_features.append(elements)
             features = concat_features
-            print(f'features before stats: length {len(features)}, 1st element type {type(features[0])}, shape 1st element of 1st element {features[0][0].shape}')
+            print(f'features after {features[0][0].shape, features[0][1].shape, features[0][2].shape}')
 
 
         # coarse-to-fine decoder: SparseConv and GRU Fusion.
