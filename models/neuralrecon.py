@@ -126,7 +126,6 @@ class NeuralRecon(nn.Module):
                     # priors.append(prior)
             # imgs = priors
             normals_features = [self.backbone2d(normal) for normal in normals]
-            print("Oke oke oke...")
 
         # image feature extraction
         # in: images; out: feature maps
@@ -134,6 +133,12 @@ class NeuralRecon(nn.Module):
 
         # TODO: make it for for imgs.shape (bs, views, ch, h, w)
         features = [self.backbone2d(img) for img in imgs]
+        print(f'features before stats: length {len(features)}, 1st element type {type(features[0])}, shape 1st element of 1st element {features[0][0].shape}')
+
+        if self.nnet_args:
+            features = [torch.cat([feat, norm], dim=1) for feat, norm in zip(features, normals_features)]
+            print(f'features before stats: length {len(features)}, 1st element type {type(features[0])}, shape 1st element of 1st element {features[0][0].shape}')
+
 
         # coarse-to-fine decoder: SparseConv and GRU Fusion.
         # in: image feature; out: sparse coords and tsdf
