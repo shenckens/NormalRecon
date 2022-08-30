@@ -96,7 +96,6 @@ class NeuralRecon(nn.Module):
             normals = []
             with torch.no_grad():
                 for img in imgs:
-                    print('imgshape', img.shape)
                     normal_list, _, _ = self.nnet(img)
                     normal = normal_list[-1][:, :3, :, :]
                     normals.append(normal)
