@@ -35,7 +35,7 @@ class NeuralRecon(nn.Module):
             self.nnet.load_state_dict(state_dict['model'])
             # self.nnet.cuda()
             self.nnet.eval()
-        self.neucon_net = NeuConNet(cfg.MODEL)
+        self.neucon_net = NeuConNet(cfg.MODEL, nnet_args)
         # for fusing to global volume
         self.fuse_to_global = GRUFusion(cfg.MODEL, direct_substitute=True)
         self.one_time = True
@@ -44,17 +44,6 @@ class NeuralRecon(nn.Module):
         """ Normalizes the RGB images to the input range"""
         return (x - self.pixel_mean.type_as(x)) / self.pixel_std.type_as(x)
 
-    def estm_norm_prior(self, img):
-        img = np.array(img).astype(np.float32) / 255.0
-        img = torch.from_numpy(img).permute(2, 0, 1)
-        img = self.normalize(img)
-        img.to(self.device)
-        norm_out_list, _, _ = self.nnet(img)
-        # includes norm and kappa (B, C, H, W) (1, 6, 480, 640)
-        # remove Batchsize dimension
-        norm_out = norm_out_list[-1].squeeze().detach()
-        img.detach()
-        return norm_out
 
     def forward(self, inputs, save_mesh=False):
         '''
