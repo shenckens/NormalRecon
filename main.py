@@ -53,6 +53,10 @@ def args():
                         default=False,
                         type=bool,
                         help='Switch whether or not to include normal priors.')
+    parser.add_argument('--prior_through_backbone',
+                        default=False,
+                        type=bool,
+                        help='Puts normal imgs through the feature backbone model.')
 
     # parse arguments and check
     args = parser.parse_args()
@@ -80,6 +84,7 @@ args = args()
 update_config(cfg, args)
 
 nnet_args = nnet_args() if args.normal_prior else False
+prior_through_backbone = args.prior_through_backbone if nnet_args else False
 
 cfg.defrost()
 num_gpus = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
@@ -174,7 +179,7 @@ else:
                                drop_last=False)
 
 # model, optimizer
-model = NeuralRecon(cfg, nnet_args=nnet_args)
+model = NeuralRecon(cfg, nnet_args=nnet_args, prior_through_backbone=prior_through_backbone)
 if cfg.DISTRIBUTED:
     model.cuda()
     model = DistributedDataParallel(

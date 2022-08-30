@@ -9,6 +9,7 @@ from .gru_fusion import GRUFusion
 from utils import tocuda
 from models.NNet.NNET import NNET
 from torchvision.utils import save_image
+import torchvision.transforms as T
 
 
 class NeuralRecon(nn.Module):
@@ -16,10 +17,11 @@ class NeuralRecon(nn.Module):
     NeuralRecon main class.
     '''
 
-    def __init__(self, cfg, nnet_args=False):
+    def __init__(self, cfg, nnet_args=False, prior_through_backbone=False):
         super(NeuralRecon, self).__init__()
         self.cfg = cfg.MODEL
         self.nnet_args = nnet_args
+        self.prior_through_backbone = prior_through_backbone
         alpha = float(self.cfg.BACKBONE2D.ARC.split('-')[-1])
         # other hparams
         self.pixel_mean = torch.Tensor(cfg.MODEL.PIXEL_MEAN).view(-1, 1, 1)
@@ -85,7 +87,7 @@ class NeuralRecon(nn.Module):
         '''
         inputs = tocuda(inputs)
         outputs = {}
-        # makes 9 elements of B, C, H, W
+        # Makes 9 elements of B, C, H, W.
         imgs = torch.unbind(inputs['imgs'], 1)
 
         # Normalize imgs beforehand.
@@ -93,29 +95,36 @@ class NeuralRecon(nn.Module):
 
         # Add normal priors to images.
         if self.nnet_args:
+            # image feature extraction
+            # in: images; out: feature maps
+            features = [self.backbone2d(img) for img in imgs]
             normals = []
             with torch.no_grad():
                 for img in imgs:
                     normal_list, _, _ = self.nnet(img)
                     normal = normal_list[-1][:, :3, :, :]
                     normals.append(normal)
-            normals_features = [self.backbone2d(normal) for normal in normals]
+            # Normal rgb imgs through backbone feature extraction.
+            if self.prior_through_backbone:
+                normals_features = [self.backbone2d(normal) for normal in normals]
+            # Normal imgs as features concatenated to original imgs' features.
+            else:
+                # Resize normal imgs to fit backbone feature outputs and concat.
+                sizes = [(features[0][i].shape[2], features[0][i].shape[3]) for i in range(len(features[0]))]
+                normals_features = [[T.Resize(size=size)(norm) for size in sizes] for norm in normals]
 
-        # image feature extraction
-        # in: images; out: feature maps
-        # features = [self.backbone2d(self.normalizer(img)) for img in imgs] # 9 imgs
-
-        # TODO: make it for for imgs.shape (bs, views, ch, h, w)
-        features = [self.backbone2d(img) for img in imgs]
-
-        if self.nnet_args:
             concat_features = []
-            for i in range(len(features)): # 9 imgs
+            for i in range(len(features)):
                 elements = []
-                for e in range(len(features[0])): # list of 3 tensors per img
+                for e in range(len(features[0])):
                     elements.append(torch.cat([features[i][e], normals_features[i][e]], dim=1))
                 concat_features.append(elements)
             features = concat_features
+
+        else:
+            # image feature extraction
+            # in: images; out: feature maps
+            features = [self.backbone2d(img) for img in imgs]
 
         # coarse-to-fine decoder: SparseConv and GRU Fusion.
         # in: image feature; out: sparse coords and tsdf

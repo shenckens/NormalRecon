@@ -17,15 +17,18 @@ class NeuConNet(nn.Module):
     Coarse-to-fine network.
     '''
 
-    def __init__(self, cfg, nnet_args=False):
+    def __init__(self, cfg, nnet_args=False, prior_through_backbone=False):
         super(NeuConNet, self).__init__()
         self.cfg = cfg
         self.n_scales = len(cfg.THRESHOLDS) - 1
-        self.nnet_args = nnet_args
 
         alpha = int(self.cfg.BACKBONE2D.ARC.split('-')[-1])
-        if self.nnet_args:
-            ch_in = [80 * 2 * alpha + 1, 96 + 40 * 2 * alpha + 2 + 1, 48 + 24 * 2 * alpha + 2 + 1, 24 + 24 + 2 + 1]
+        if nnet_args:
+            if prior_through_backbone:
+                ch_in = [80 * 2 * alpha + 1, 96 + 40 * 2 * alpha + 2 + 1, 48 + 24 * 2 * alpha + 2 + 1, 24 + 24 + 2 + 1]
+            else:
+                ch_in = [80 * alpha + 1 + 3, 96 + 40 * alpha + 2 + 1 + 3, 48 + 24 * alpha + 2 + 1 + 3, 24 + 24 + 2 + 1]
+
         else:
             ch_in = [80 * alpha + 1, 96 + 40 * alpha + 2 + 1, 48 + 24 * alpha + 2 + 1, 24 + 24 + 2 + 1]
         channels = [96, 48, 24]
