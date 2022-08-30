@@ -112,8 +112,6 @@ class NeuralRecon(nn.Module):
                 # Resize normal imgs to fit backbone feature outputs and concat.
                 sizes = [(features[0][i].shape[2], features[0][i].shape[3]) for i in range(len(features[0]))]
                 normals_features = [[T.Resize(size=size)(norm) for size in sizes] for norm in normals]
-                print('This is the shape', normals_features[0][0].shape)
-                print('This is the content', normals_features[0][0])
 
             concat_features = []
             for i in range(len(features)):
