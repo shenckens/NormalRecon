@@ -37,7 +37,7 @@ class NeuralRecon(nn.Module):
             self.nnet.load_state_dict(state_dict['model'])
             # self.nnet.cuda()
             self.nnet.eval()
-        self.neucon_net = NeuConNet(cfg.MODEL, nnet_args)
+        self.neucon_net = NeuConNet(cfg.MODEL, nnet_args, prior_through_backbone)
         # for fusing to global volume
         self.fuse_to_global = GRUFusion(cfg.MODEL, direct_substitute=True)
         self.one_time = True
