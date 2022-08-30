@@ -84,7 +84,7 @@ args = args()
 update_config(cfg, args)
 
 nnet_args = nnet_args() if args.normal_prior else False
-prior_through_backbone = args.prior_through_backbone if nnet_args else False
+prior_through_backbone = args.prior_through_backbone
 
 cfg.defrost()
 num_gpus = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
