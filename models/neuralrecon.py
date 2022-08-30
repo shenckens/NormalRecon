@@ -93,27 +93,13 @@ class NeuralRecon(nn.Module):
 
         # Add normal priors to images.
         if self.nnet_args:
-            # priors = []
             normals = []
             with torch.no_grad():
                 for img in imgs:
                     print('imgshape', img.shape)
                     normal_list, _, _ = self.nnet(img)
                     normal = normal_list[-1][:, :3, :, :]
-                    # normal_4c = normal_list[-1]
-                    # normal = normal_4c[:, :3, :, :]
-                    # kappa = normal_4c[:, 3:, :, :]
-                    if self.one_time:
-                        print("This is printed only once!")
-                        save_image(normal[0], './normal_img.png')
-                        # save_image(kappa[0], './kappa_img.png')
-                        self.one_time = False
-                        print('Donediddit')
-                    print('normalshape', normal.shape)
                     normals.append(normal)
-                    # prior = torch.cat([img, normal], dim=1)
-                    # priors.append(prior)
-            # imgs = priors
             normals_features = [self.backbone2d(normal) for normal in normals]
 
         # image feature extraction
@@ -122,7 +108,6 @@ class NeuralRecon(nn.Module):
 
         # TODO: make it for for imgs.shape (bs, views, ch, h, w)
         features = [self.backbone2d(img) for img in imgs]
-        print(f'features before {features[0][0].shape, features[0][1].shape, features[0][2].shape}')
 
         if self.nnet_args:
             concat_features = []
@@ -132,8 +117,6 @@ class NeuralRecon(nn.Module):
                     elements.append(torch.cat([features[i][e], normals_features[i][e]], dim=1))
                 concat_features.append(elements)
             features = concat_features
-            print(f'features after {features[0][0].shape, features[0][1].shape, features[0][2].shape}')
-
 
         # coarse-to-fine decoder: SparseConv and GRU Fusion.
         # in: image feature; out: sparse coords and tsdf
