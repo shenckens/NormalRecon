@@ -23,6 +23,7 @@ sys.path.append('.')
 import argparse
 import json
 import os
+os.environ['PYOPENGL_PLATFORM'] = 'egl'
 
 import numpy as np
 import pyrender
@@ -34,6 +35,7 @@ from tools.evaluation_utils import eval_depth, eval_mesh
 from tools.visualize_metrics import visualize
 import open3d as o3d
 import ray
+
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
