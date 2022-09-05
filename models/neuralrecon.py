@@ -109,7 +109,8 @@ class NeuralRecon(nn.Module):
                 normals_features = [self.backbone2d(normal) for normal in normals]
             # Normal imgs as features concatenated to original imgs' features.
             else:
-                # Resize normal imgs to fit backbone feature outputs and concat.
+                # Resize normal imgs to fit backbone feature outputs and concat
+                # normal_prior_concat_imgs.
                 sizes = [(features[0][i].shape[2], features[0][i].shape[3]) for i in range(len(features[0]))]
                 normals_features = [[T.Resize(size=size)(norm) for size in sizes] for norm in normals]
 
