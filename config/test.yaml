@@ -1,7 +1,7 @@
 DATASET: 'scannet'
 BATCH_SIZE: 2
 SAVE_SCENE_MESH: True
-LOGDIR: './checkpoints'
+LOGDIR: './checkpoints/voxel3cm'
 SAVE_FREQ: 1
 MODE: 'test'
 
