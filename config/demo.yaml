@@ -4,13 +4,13 @@ SAVE_SCENE_MESH: True
 SAVE_INCREMENTAL: False
 VIS_INCREMENTAL: False
 REDUCE_GPU_MEM: True  # Drastically reduces GPU memory and will slow down inference a bit.
-LOGDIR: './checkpoints'
+LOGDIR: './checkpoints/demo'
 SAVE_FREQ: 1
 MODE: 'test'
 
 TEST:
   # Change your own data path here
-  PATH: '/home/sunjiaming/Repositories/NeuralFusion/data/neucon_tianren_demo/tianren_zihao'
+  PATH: '/project/henckens/data/demo/neucon_demodata_b5f1'
   N_VIEWS: 9
   N_WORKERS: 1
 
@@ -35,4 +35,3 @@ MODEL:
 
   THRESHOLDS: [0, 0, 0]
   POS_WEIGHT: 1.5
-
