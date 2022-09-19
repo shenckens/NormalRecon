@@ -8,6 +8,14 @@ LOGDIR: './checkpoints/demo'
 SAVE_FREQ: 1
 MODE: 'test'
 
+TRAIN:
+  PATH: '/project/henckens/data/scannet'
+  EPOCHS: 991
+  N_VIEWS: 9
+  LR: 1e-3
+  N_WORKERS: 8
+  LREPOCHS: '12,24,48:2'
+
 TEST:
   # Change your own data path here
   PATH: '/project/henckens/data/demo/neucon_demodata_b5f1'
