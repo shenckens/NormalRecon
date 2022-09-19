@@ -12,21 +12,53 @@ from config import cfg, update_config
 from datasets import find_dataset_def, transforms
 from tools.process_arkit_data import process_data
 
+def args():
+    parser = argparse.ArgumentParser(description='NeuralRecon Real-time Demo')
+    parser.add_argument('--cfg',
+                        help='experiment configure file name',
+                        required=True,
+                        type=str)
 
-parser = argparse.ArgumentParser(description='NeuralRecon Real-time Demo')
-parser.add_argument('--cfg',
-                    help='experiment configure file name',
-                    required=True,
-                    type=str)
+    parser.add_argument('opts',
+                        help="Modify config options using the command-line",
+                        default=None,
+                        nargs=argparse.REMAINDER)
 
-parser.add_argument('opts',
-                    help="Modify config options using the command-line",
-                    default=None,
-                    nargs=argparse.REMAINDER)
+    parser.add_argument('--normal_prior',
+                        default=False,
+                        type=bool,
+                        help='Switch whether or not to include normal priors.')
 
-# parse arguments and check
-args = parser.parse_args()
+    parser.add_argument('--prior_through_backbone',
+                        default=False,
+                        type=bool,
+                        help='Puts normal imgs through the feature backbone model.')
+
+    # parse arguments and check
+    args = parser.parse_args()
+
+    return args
+
+def nnet_args():
+    parser = argparse.ArgumentParser(description='Arguments for the normal prior model.')
+
+    parser.add_argument('--architecture', default='BN', type=str, help='{BN, GN}')
+    parser.add_argument("--pretrained", default='scannet', type=str, help="{nyu, scannet}")
+    parser.add_argument('--sampling_ratio', type=float, default=0.4)
+    parser.add_argument('--importance_ratio', type=float, default=0.7)
+    parser.add_argument('--input_height', default=480, type=int)
+    parser.add_argument('--input_width', default=640, type=int)
+    # parser.add_argument('--imgs_dir', default='./examples', type=str)
+
+    args, _ = parser.parse_known_args()
+
+    return args
+
+args = args()
 update_config(cfg, args)
+
+nnet_args = nnet_args() if args.normal_prior else False
+prior_through_backbone = args.prior_through_backbone
 
 if not os.path.exists(os.path.join(cfg.TEST.PATH, 'SyncedPoses.txt')):
     logger.info("First run on this captured data, start the pre-processing...")
@@ -48,7 +80,7 @@ data_loader = DataLoader(test_dataset, cfg.BATCH_SIZE, shuffle=False, num_worker
 
 # model
 logger.info("Initializing the model on GPU...")
-model = NeuralRecon(cfg).cuda().eval()
+model = NeuralRecon(cfg, nnet_args=nnet_args, prior_through_backbone=prior_through_backbone).cuda().eval()
 model = torch.nn.DataParallel(model, device_ids=[0])
 
 # use the latest checkpoint file
@@ -99,15 +131,15 @@ with torch.no_grad():
                 If you can run with the demo data without any problem, please submit a issue with the failed data attatched, thanks!
             """
             save_mesh_scene.save_scene_eval(epoch_idx, outputs)
-        
+
         gpu_mem_usage.append(torch.cuda.memory_reserved())
-        
+
 summary_text = f"""
 Summary:
-    Total number of fragments: {frag_len} 
+    Total number of fragments: {frag_len}
     Average keyframes/sec: {1 / (duration / (frag_len * cfg.TEST.N_VIEWS))}
-    Average GPU memory usage (GB): {sum(gpu_mem_usage) / len(gpu_mem_usage) / (1024 ** 3)} 
-    Max GPU memory usage (GB): {max(gpu_mem_usage) / (1024 ** 3)} 
+    Average GPU memory usage (GB): {sum(gpu_mem_usage) / len(gpu_mem_usage) / (1024 ** 3)}
+    Max GPU memory usage (GB): {max(gpu_mem_usage) / (1024 ** 3)}
 """
 print(summary_text)
 
