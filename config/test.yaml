@@ -1,7 +1,7 @@
 DATASET: 'scannet'
 BATCH_SIZE: 2
 SAVE_SCENE_MESH: True
-LOGDIR: './checkpoints/normal_prior_through_backbone'
+LOGDIR: './checkpoints/vanilla/47'
 SAVE_FREQ: 1
 MODE: 'test'
 
